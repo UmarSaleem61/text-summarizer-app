@@ -1,3 +1,4 @@
+# Text Summarizer App
 import streamlit as st
 from transformers import pipeline
 from docx import Document
@@ -17,13 +18,13 @@ st.set_page_config(
 )
 
 # Define main function
-def main_function():
-    
+def main_function():      
+
     # Call function to setup UI
-    max_len, min_len = setup_ui()  
+    max_len, min_len = setup_ui()
 
     # Call function to load summarizer model
-    summarizer = summarizer_model()     
+    summarizer = summarizer_model()  
 
     # initialize session_state-flages & variables
     if 'file_uploaded' not in st.session_state:       
@@ -34,50 +35,48 @@ def main_function():
         st.session_state.downloadable_files = {}
         st.session_state.final_summary = " "        
         st.session_state.file = None
-        st.session_state.text = " " 
-        st.session_state.downloadable_files_flag = False
+        st.session_state.text = " "        
 
-    # Check if file has not been uploaded, then call upload file function.
-    if not st.session_state.file_uploaded:        
-        st.session_state.file = upload_file()       
-        if st.session_state.file:            
-            st.session_state.file_uploaded = True
-
-    # Check if file has been uploaded/avaialable, then call summarizer function.
-    if st.session_state.file:        
-        if st.sidebar.button("Summarize"):            
-            st.session_state.final_summary, 
-            st.session_state.text, 
-            st.session_state.word_count_uploaded, 
-            st.session_state.word_count_summary = display_and_summarize(st.session_state.file, summarizer, max_len, min_len)
-
-            st.text(f"final_summary: {st.session_state.final_summary}")
-       
-    # Check if summary has been generated, then call function to generate downloadable files of summary.
-    if st.session_state.final_summary != " ":                    
-        st.session_state.downloadable_files = create_downloadable_files(st.session_state.final_summary) 
-        st.text(f"downloadable_files: {st.session_state.downloadable_files}")
-        
-        # check if variable; downloadable_file (dictionary) is empty or not? then update downloadable_files_flag accordingly
-        if len(st.session_state.downloadable_files) == 0:
-            st.session_state.downloadable_files_flag = False
-        else:
-            st.session_state.downloadable_files_flag = True
-            
-    st.text(f"downloadable_files_flag: {st.session_state.downloadable_files_flag}") 
-    # Check if downloadable_files have been created, then call function to create file download-buttons.
-    if st.session_state.downloadable_files_flag: 
-        st.text(f"downloadable_files_flag: {st.session_state.downloadable_files_flag}")
-        download_buttons(st.session_state.downloadable_files)     
+    if not st.session_state.file_uploaded:          
                 
-    # Check if session_state download_triggered flag is TRUE, then call function to display original-text, summary and word-counts.
-    if st.session_state.download_triggered:       
-        display_content_word_counts(st.session_state.final_summary, 
-                                    st.session_state.text, 
-                                    st.session_state.word_count_uploaded, 
-                                    st.session_state.word_count_summary)  
-        # Update session_state flag
-        st.session_state.download_triggered = False        
+        # Call function to upload file
+        file = upload_file()
+        if file:
+            st.session_state.file_uploaded = True
+            st.session_state.file = file
+
+        # Check if file has been uploaded/avaialable before proceeding
+        if st.session_state.file:
+            file = st.session_state.file
+            
+            # Call function to display and summarize the uploaded text
+            final_summary, text, word_count_uploaded, word_count_summary = display_and_summarize(file, summarizer, max_len, min_len)
+
+            # Update session-state variables
+            st.session_state.final_summary = final_summary
+            st.session_state.text = text
+            st.session_state.word_count_uploaded = word_count_uploaded
+            st.session_state.word_count_summary = word_count_summary
+
+            # Call function to generate downloadable files of summary            
+            downloadable_files = create_downloadable_files(st.session_state.final_summary)
+            # update session_state variable
+            st.session_state.downloadable_files = downloadable_files
+
+    # Check if downloadable_files have been created, then call function to create buttons and download files
+    if st.session_state.downloadable_files:        
+        download_buttons(st.session_state.downloadable_files)     
+            
+    # Check if session_state download_triggered flag is TRUE, then call function to display original-text, summary and word-counts
+    if st.session_state.download_triggered:
+        # Update variables from session_state 
+        final_summary = st.session_state.final_summary
+        text = st.session_state.text
+        word_count_uploaded = st.session_state.word_count_uploaded
+        word_count_summary = st.session_state.word_count_summary       
+        
+        display_content_word_counts(final_summary, text, word_count_uploaded, word_count_summary)         
+        st.session_state.download_triggered = False        # Update session_state flag
     
 # Define function to access summarizer model
 def summarizer_model():
@@ -99,18 +98,17 @@ def setup_ui():
         )
 
     # Setup adjustable summary length options.
-    st.sidebar.header("Summary Length Optimization:")
+    st.sidebar.header("Summary Length Adjustment:")
     max_len = st.sidebar.slider("Maximum Length", min_value=50, max_value=500, value=150)
     min_len = st.sidebar.slider("Minimum Length", min_value=20, max_value=100, value=50)
     return max_len, min_len
 
 # Define file upload function
 def upload_file():    
-    return st.file_uploader("To summarize, upload a text file (TXT, DOCX, or PDF) by clicking 'Browse Files' or dragging and dropping a file.", type=["txt", "docx", "pdf"])
+    return st.file_uploader("Upload a text file (TXT, DOCX, or PDF) by clicking 'Browse Files' or dragging and dropping a file.", type=["txt", "docx", "pdf"])
 
 # Define summarizer function
-def display_and_summarize(file, summarizer, max_len, min_len):      
-    
+def display_and_summarize(file, summarizer, max_len, min_len):    
     # Determine file extension
     if file.name.endswith(".docx"):
         file_extension = "docx"
@@ -315,12 +313,12 @@ def download_buttons(downloadable_files):
         on_click=trigger_download,
     ) 
     # If "Upload Text File" button is clicked, then reset session_state and rerun the app from top of the script
-    if st.sidebar.button("Upload Text File"):        
-        reset_session_state()      
-        st.rerun()    
-
+    if st.sidebar.button("Upload Text File"): 
+        reset_session_state()                  
+        st.rerun()
+        
 # Define function to set session_state.download_triggered flag.
-def trigger_download():      
+def trigger_download():    
     st.session_state.download_triggered = True
     
 # Define function to reset session_state-flags & variables
@@ -332,9 +330,7 @@ def reset_session_state():
     st.session_state.downloadable_files = {}
     st.session_state.final_summary = " "        
     st.session_state.file = None
-    st.session_state.text = " "
-    st.session_state.downloadable_files_flag = False
-
+    st.session_state.text = " "     
 
 # Run the main function
 if __name__ == "__main__":
