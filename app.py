@@ -105,17 +105,7 @@ def setup_ui():
 
 # Define file upload function
 def upload_file():    
-   # return st.file_uploader("Upload a text file (TXT, DOCX, or PDF) by clicking 'Browse Files' or dragging and dropping a file.", type=["txt", "docx", "pdf"])
-       
-    try:
-        uploaded_file = st.file_uploader("Upload a text file (TXT, DOCX, or PDF)", type=["txt", "docx", "pdf"])
-        if uploaded_file:
-            st.write(f"Uploaded file: {uploaded_file.name}")
-        return uploaded_file
-    except Exception as e:
-        st.error(f"Error during file upload: {str(e)}")
-        return None
-
+   return st.file_uploader("Upload a text file (TXT, DOCX, or PDF) by clicking 'Browse Files' or dragging and dropping a file.", type=["txt", "docx", "pdf"])
 
 # Define summarizer function
 def display_and_summarize(file, summarizer, max_len, min_len):    
