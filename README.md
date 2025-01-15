@@ -1,0 +1,1 @@
+This app summarizes user-uploaded text files (TXT, DOCX, or PDF). It generates a concise summary using the Generative-AI LLM model: facebook/bart-large-cnn. The summary can be downloaded in TXT, DOCX, or PDF format. The app was designed and implemented with the assistance of ChatGPT.
