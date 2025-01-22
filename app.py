@@ -80,7 +80,8 @@ def main_function():
     
 # Define function to access summarizer model
 def summarizer_model():
-    summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
+    #summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
+    summarizer = pipeline("summarization", model="facebook/bart-base")
     return summarizer
 
 # Define to setup UI
